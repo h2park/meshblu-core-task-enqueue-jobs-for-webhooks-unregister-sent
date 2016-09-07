@@ -32,18 +32,19 @@ describe 'EnqueueJobsForWebhooksUnregistertSent', ->
 
   describe '->do', ->
     context 'with a device with no webhooks', ->
+      beforeEach (done) ->
+        @datastore.insert {
+          uuid: 'subscriber'
+        }, done
+
       context 'when given a valid job', ->
         beforeEach (done) ->
-          data =
-            uuid: 'subscriber'
-
-          rawData = JSON.stringify data
           request =
             metadata:
               auth: {uuid: 'subscriber'}
               route: [{type: 'unregister.sent', from: 'subscriber', to: 'subscriber'}]
               responseId: 'its-electric'
-            rawData: rawData
+            rawData: '{}'
 
           @sut.do request, (error, @response) => done error
 
@@ -57,27 +58,28 @@ describe 'EnqueueJobsForWebhooksUnregistertSent', ->
           expect(@response).to.deep.equal expectedResponse
 
     context 'with a device with one webhooks', ->
+      beforeEach (done) ->
+        @datastore.insert {
+          uuid: 'subscriber'
+          meshblu:
+            forwarders:
+              unregister:
+                sent: [{
+                  type:   'webhook'
+                  url:    'https://google.com'
+                  method: 'POST'
+                }]
+        }, done
+
       context 'when given a valid job', ->
         beforeEach (done) ->
-          data =
-            uuid: 'subscriber'
-            meshblu:
-              forwarders:
-                unregister:
-                  sent: [{
-                    type:   'webhook'
-                    url:    'https://google.com'
-                    method: 'POST'
-                  }]
-          rawData = JSON.stringify data
-
           request =
             metadata:
               auth: {uuid: 'subscriber'}
               route: [{type: 'unregister.sent', from: 'subscriber', to: 'subscriber'}]
               forwardedRoutes: []
               responseId: 'its-electric'
-            rawData: rawData
+            rawData: '{}'
 
           @sut.do request, (error, @response) => done error
 
@@ -108,29 +110,18 @@ describe 'EnqueueJobsForWebhooksUnregistertSent', ->
                   type:   'webhook'
                   url:    'https://google.com'
                   method: 'POST'
+              rawData: '{}'
             }
             done()
 
       context 'when given a valid job where the last hop from does not match the to', ->
         beforeEach (done) ->
-          data =
-            uuid: 'subscriber'
-            meshblu:
-              forwarders:
-                unregister:
-                  sent: [{
-                    type:   'webhook'
-                    url:    'https://google.com'
-                    method: 'POST'
-                  }]
-          rawData = JSON.stringify data
-
           request =
             metadata:
               auth: {uuid: 'subscriber'}
               route: [{type: 'unregister.sent', from: 'emitter', to: 'subscriber'}]
               responseId: 'its-electric'
-            rawData: rawData
+            rawData: '{}'
 
           @sut.do request, (error, @response) => done error
 
@@ -160,5 +151,6 @@ describe 'EnqueueJobsForWebhooksUnregistertSent', ->
                   type:   'webhook'
                   url:    'https://google.com'
                   method: 'POST'
+              rawData: '{}'
             }
             done()
