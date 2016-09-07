@@ -20,7 +20,7 @@ class EnqueueJobsForWebhooksUnregisterSent
     @_doCallback request, code, callback
 
   do: (request, callback) =>
-    @webhookManager.enqueueForSentUsingRawData {
+    @webhookManager.enqueueForSent {
       uuid: request.metadata.auth.uuid
       route: request.metadata.route
       forwardedRoutes: request.metadata.forwardedRoutes
